@@ -1,35 +1,62 @@
-"use strict";
+// "use strict";
 
 // Required place for openweather api
 const ApiURL = "https://api.openweathermap.org/data/2.5";
 const currentWeatherApiURL = `${ApiURL}/weather`;
-const dailyWeatherApiURL = `${ApiURL}/forecast/daily`;
+const dailyWeatherApiURL = `${ApiURL}/forecast`;
+// const dailyWeatherApiURL = `${ApiURL}/forecast/daily`;
 
 // Temporary place holder for api key, and city
 const APIKEY = "b003fb9dacba939b22f1106e25ad5a19";
 
+/**
+ * Query current weather. It will return the response.
+ *
+ * @param {*} city
+ */
 async function getCurrentWeather(city) {
   const requestUrl = makeQueryURLWithKey(currentWeatherApiURL, {
     q: `${city}`,
   });
 
-  await fetch(requestUrl)
-    .then((response) => response.json())
-    .then(function (data) {
-      console.log(data);
+  const response = await fetch(requestUrl)
+    .then((response) => {
+      if (response.ok) return response.json();
+      else throw new Error("City name not known from the api");
+    })
+    .then((data) => {
+      // Draw current weather to DOM
+    })
+    .catch((error) => {
+      console.log("Error", error);
+      return null;
     });
+
+  return response;
 }
 
-async function getNextFiveDaysForecast(city, cnt) {
+/**
+ *
+ * @param {*} city
+ */
+async function getNextFiveDaysForecast(city = "") {
   const requestUrl = makeQueryURLWithKey(dailyWeatherApiURL, {
     q: `${city}`,
-    cnt: `${cnt}`,
   });
+  const response = await fetch(requestUrl)
+    .then((response) => {
+      if (response.ok) return response.json;
+      else throw new Error("city name or server problem");
+    })
+    .then((data) => {
+      // Draw five days weather doms
+    })
+    .catch((error) => {
+      console.log("Error", error);
+      return null;
+    });
 
-  console.log(requestUrl);
-  await fetch(requestUrl)
-    .then((response) => response.json)
-    .then((data) => console.log(data));
+  return response;
 }
 
 /**
@@ -39,7 +66,7 @@ async function getNextFiveDaysForecast(city, cnt) {
  * @param Object queryObject
  * @param String apiKey
  */
-const makeQueryURLWithKey = function (baseURL, queryObject, apiKey = APIKEY) {
+function makeQueryURLWithKey(baseURL, queryObject, apiKey = APIKEY) {
   function makeQueryURL(baseURL, queryObject) {
     // join the query into the string
     const query = Object.keys(queryObject)
@@ -51,7 +78,11 @@ const makeQueryURLWithKey = function (baseURL, queryObject, apiKey = APIKEY) {
 
   queryObject["appid"] = apiKey;
   return makeQueryURL(baseURL, queryObject);
-};
+}
 
-// getCurrentWeather("seattle");
-getNextFiveDaysForecast("seattle", 7);
+function searchAndDraw(city = "") {
+  getCurrentWeather(city);
+  getNextFiveDaysForecast(city);
+}
+
+searchAndDraw("seattle");
