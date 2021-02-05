@@ -1,4 +1,4 @@
-// "use strict";
+"use strict";
 
 // Required place for openweather api
 const ApiURL = "https://api.openweathermap.org/data/2.5";
@@ -20,13 +20,8 @@ async function getCurrentWeather(city) {
   });
 
   const response = await fetch(requestUrl)
-    .then((response) => {
-      if (response.ok) return response.json();
-      else throw new Error("City name not known from the api");
-    })
-    .then((data) => {
-      // Draw current weather to DOM
-    })
+    .then(status)
+    .then(json)
     .catch((error) => {
       console.log("Error", error);
       return null;
@@ -67,6 +62,8 @@ async function getNextFiveDaysForecast(city = "") {
  * @param String apiKey
  */
 function makeQueryURLWithKey(baseURL, queryObject, apiKey = APIKEY) {
+  const queryObjectCopy = queryObject;
+
   function makeQueryURL(baseURL, queryObject) {
     // join the query into the string
     const query = Object.keys(queryObject)
@@ -76,13 +73,56 @@ function makeQueryURLWithKey(baseURL, queryObject, apiKey = APIKEY) {
     return `${baseURL}?${query}`;
   }
 
-  queryObject["appid"] = apiKey;
+  queryObjectCopy.appid = apiKey;
   return makeQueryURL(baseURL, queryObject);
 }
 
-function searchAndDraw(city = "") {
-  getCurrentWeather(city);
+async function searchAndDraw(city = "") {
+  const todayWeather = await getCurrentWeather(city);
+  console.log(todayWeather);
   getNextFiveDaysForecast(city);
 }
 
+function makeDailyWeatherCard(date, weather, temperature, humidity) {
+  const card = document.createElement("div");
+  card.classList.add("card");
+  card.innerHTML = `
+    <img class="card-img-top" src="..." alt="Card image cap" />
+    <div class="card-body">
+      <h5 class="card-title">Card title</h5>
+      <p class="card-text">
+        date: ${date}
+        weather: ${weather}
+        temperature: ${temperature}
+        humidity: ${humidity}
+      </p>
+    </div>
+    <div class="card-footer">
+      <small class="text-muted">Last updated 3 mins ago</small>
+    </div>
+  `;
+
+  return card;
+}
+
+function status(response) {
+  if (response.status >= 200 && response.status < 300) {
+    return Promise.resolve(response);
+  } else {
+    return Promise.reject(new Error(response.statusText));
+  }
+}
+
+function json(response) {
+  return response.json();
+}
+
 searchAndDraw("seattle");
+const cardGroup = document.getElementById("five-days-weather");
+cardGroup.innerHTML = "";
+// cardGroup.innerHTML = makeDailyWeatherCard(12, 32, 32, 23);
+// const test = makeDailyWeatherCard(12, 32, 32, 23);
+// const test1 = makeDailyWeatherCard(12, 32, 32, 23);
+// console.log(test);
+// cardGroup.appendChild(test);
+// cardGroup.appendChild(test1);
