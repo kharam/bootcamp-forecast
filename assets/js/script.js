@@ -6,21 +6,33 @@ const citySearchButton = document.getElementById("city-search-button");
 const resultCity = document.getElementById("result-city");
 const resultDetail = document.getElementById("current-weather-detail");
 const cardGroup = document.getElementById("five-days-weather");
+const historyList = document.getElementById("history-list");
 
 // Required place for openweather api
 const ApiURL = "https://api.openweathermap.org/data/2.5";
 const currentWeatherApiURL = `${ApiURL}/weather`;
 const dailyWeatherApiURL = `${ApiURL}/forecast`;
-// const dailyWeatherApiURL = `${ApiURL}/forecast/daily`;
 
 // Temporary place holder for api key, and city
 const APIKEY = "b003fb9dacba939b22f1106e25ad5a19";
 
+// place holder for history
+let history = [];
+
 // Add event listener for search
 citySearchButton.addEventListener("click", (event) => {
   event.preventDefault();
-  // console.log(cityInput.value);
+  // save history
+  saveHistory(cityInput.value);
+
+  // Draw the city weather on canvas
   searchAndDraw(cityInput.value);
+});
+
+historyList.addEventListener("click", (event) => {
+  event.preventDefault();
+  const keyword = event.target.textContent;
+  searchAndDraw(keyword);
 });
 
 /**
@@ -62,7 +74,7 @@ async function getNextFiveDaysForecast(city = "") {
       const weathers = [];
       for (let i = 7; i < 40; i += 8) {
         const JSON = data.list[i];
-        const date = JSON.dt_txt;
+        const date = JSON.dt_txt.split(" ")[0];
         const weather = JSON.weather[0].main;
         const weatherDescription = JSON.weather[0].description;
         const icon = `http://openweathermap.org/img/wn/${JSON.weather[0].icon}@4x.png`;
@@ -118,7 +130,7 @@ function makeQueryURLWithKey(baseURL, queryObject, apiKey = APIKEY) {
 async function searchAndDraw(city = "") {
   function drawCurrentWeather(todayWeather) {
     resultCity.textContent = city;
-    console.log(`city: ${city}`);
+    // console.log(`city: ${city}`);
     if (todayWeather === "") resultDetail.innerHTML = "Not Found";
     else {
       resultDetail.innerHTML = `
@@ -221,3 +233,45 @@ function status(response) {
 function json(response) {
   return response.json();
 }
+
+function loadHistory() {
+  history = JSON.parse(localStorage.getItem("history"));
+
+  // if history is null, set the history to empty array
+  if (history === null) history = [];
+  drawHistory();
+}
+
+function saveHistory(keyword) {
+  // clear history, and load history again
+  if (history.includes(keyword)) {
+    const index = history.indexOf(keyword);
+    history.splice(index, 1);
+  }
+  history.unshift(keyword);
+
+  // If length is longer than 8, reduce to 8
+  while (history.length > 8) {
+    history.pop();
+  }
+
+  // Load the history on the screen
+  drawHistory();
+
+  // Save the new history
+  localStorage.setItem("history", JSON.stringify(history));
+}
+
+function drawHistory() {
+  // clear the history, and redraw the history
+  historyList.innerHTML = "";
+  history.forEach((keyword) => {
+    const key = document.createElement("button");
+    key.classList.add("btn");
+    key.classList.add("previous_search");
+    key.textContent = keyword;
+    historyList.appendChild(key);
+  });
+}
+
+loadHistory();
