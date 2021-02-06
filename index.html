@@ -37,15 +37,16 @@
         <div class="card">
           <h3 class="card-header text-uppercase">Search for a City</h3>
           <form id="user-form" class="card-body">
-            <!-- <label class="form-label" for="username">Username</label> -->
             <input
               name="city"
-              id="city"
+              id="city-input"
               type="text"
               autofocus="true"
               class="form-input"
             />
-            <button type="submit" class="btn">Search</button>
+            <button id="city-search-button" type="submit" class="btn">
+              Search
+            </button>
           </form>
         </div>
 
@@ -63,9 +64,11 @@
         <div id="repos-container" class="list-group">
           <div class="card">
             <h2 class="subtitle">
-              Showing Weather for: <span id="repo-search-term"></span>
+              Showing Weather for: <span id="result-city"></span>
             </h2>
-            <h3>Temperature :</h3>
+            <div id="current-weather-detail">
+              <h3>Temperature :</h3>
+            </div>
           </div>
         </div>
 
