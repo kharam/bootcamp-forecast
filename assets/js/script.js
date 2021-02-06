@@ -5,6 +5,7 @@ const cityInput = document.getElementById("city-input");
 const citySearchButton = document.getElementById("city-search-button");
 const resultCity = document.getElementById("result-city");
 const resultDetail = document.getElementById("current-weather-detail");
+const cardGroup = document.getElementById("five-days-weather");
 
 // Required place for openweather api
 const ApiURL = "https://api.openweathermap.org/data/2.5";
@@ -49,8 +50,11 @@ async function getCurrentWeather(city) {
  * @param {*} city
  */
 async function getNextFiveDaysForecast(city = "") {
+  const weatherList = [];
+
   const requestUrl = makeQueryURLWithKey(dailyWeatherApiURL, {
     q: `${city}`,
+    units: "imperial",
   });
   const response = await fetch(requestUrl)
     .then(status)
@@ -58,7 +62,24 @@ async function getNextFiveDaysForecast(city = "") {
     .then((data) => {
       const weathers = [];
       for (let i = 7; i < 40; i += 8) {
-        weathers.push(data.list[i]);
+        const JSON = data.list[i];
+        const date = JSON.dt_txt;
+        const weather = JSON.weather[0].main;
+        const weatherDescription = JSON.weather[0].description;
+        const icon = `http://openweathermap.org/img/wn/${JSON.weather[0].icon}@4x.png`;
+        const temp = JSON.main.temp;
+        const humidity = JSON.main.humidity;
+
+        const weatherObject = {
+          date: date,
+          weather: weather,
+          weatherDescription: weatherDescription,
+          icon: icon,
+          temperature: temp,
+          humidity: humidity,
+        };
+
+        weathers.push(weatherObject);
       }
 
       return weathers;
@@ -104,12 +125,20 @@ async function searchAndDraw(city = "") {
       <h4>UV Index: ${todayWeather.uvIndex}  </h4>
     `;
   }
+  function drawNextFiveWeather(weatherList) {
+    cardGroup.innerHTML = "";
+    weatherList.forEach((weather) => {
+      const weatherCard = makeDailyWeatherCard(weather);
+      cardGroup.appendChild(weatherCard);
+    });
+  }
   const todayWeather = await getTodaysWeather(city);
   const nextFiveDaysWeather = await getNextFiveDaysForecast(city);
 
   drawCurrentWeather(todayWeather);
+  drawNextFiveWeather(nextFiveDaysWeather);
 
-  console.log(todayWeather);
+  console.log(nextFiveDaysWeather);
 }
 
 async function getTodaysWeather(city = "") {
@@ -154,18 +183,18 @@ async function getTodaysWeather(city = "") {
   return weatherObject;
 }
 
-function makeDailyWeatherCard(date, weather, temperature, humidity) {
+function makeDailyWeatherCard(weather) {
   const card = document.createElement("div");
   card.classList.add("card");
   card.innerHTML = `
-    <img class="card-img-top" src="http://openweathermap.org/img/wn/10d@4x.png" alt="Card image cap" />
+    <img class="card-img-top" src="${weather.icon}" alt="Card image cap" />
     <div class="card-body">
       <h5 class="card-title">Card title</h5>
       <p class="card-text">
-        date: ${date}
-        weather: ${weather}
-        temperature: ${temperature}
-        humidity: ${humidity}
+        date: ${weather.date}
+        weather: ${weather.weather}
+        temperature: ${weather.temperature}
+        humidity: ${weather.humidity}
       </p>
     </div>
   `;
@@ -186,11 +215,9 @@ function json(response) {
 }
 
 searchAndDraw("seattle");
-const cardGroup = document.getElementById("five-days-weather");
-cardGroup.innerHTML = "";
 // cardGroup.innerHTML = makeDailyWeatherCard(12, 32, 32, 23);
-const test = makeDailyWeatherCard(12, 32, 32, 23);
-const test1 = makeDailyWeatherCard(12, 32, 32, 23);
+// const test = makeDailyWeatherCard(12, 32, 32, 23);
+// const test1 = makeDailyWeatherCard(12, 32, 32, 23);
 // console.log(test);
-cardGroup.appendChild(test);
-cardGroup.appendChild(test1);
+// cardGroup.appendChild(test);
+// cardGroup.appendChild(test1);
