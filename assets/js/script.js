@@ -1,4 +1,4 @@
-"use strict";
+// "use strict";
 
 // DOM for button and place holder
 const cityInput = document.getElementById("city-input");
