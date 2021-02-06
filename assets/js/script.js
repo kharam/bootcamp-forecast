@@ -22,11 +22,15 @@ let history = [];
 // Add event listener for search
 citySearchButton.addEventListener("click", (event) => {
   event.preventDefault();
-  // save history
-  saveHistory(cityInput.value);
 
-  // Draw the city weather on canvas
-  searchAndDraw(cityInput.value);
+  // make search only works on year make search
+  if (cityInput.value !== "") {
+    // save history
+    saveHistory(cityInput.value);
+
+    // Draw the city weather on canvas
+    searchAndDraw(cityInput.value);
+  }
 });
 
 historyList.addEventListener("click", (event) => {
@@ -239,7 +243,10 @@ function loadHistory() {
 
   // if history is null, set the history to empty array
   if (history === null) history = [];
-  drawHistory();
+  else {
+    drawHistory();
+    searchAndDraw(history[0]);
+  }
 }
 
 function saveHistory(keyword) {
