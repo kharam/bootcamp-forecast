@@ -19,7 +19,8 @@ const APIKEY = "b003fb9dacba939b22f1106e25ad5a19";
 // Add event listener for search
 citySearchButton.addEventListener("click", (event) => {
   event.preventDefault();
-  console.log("clicked");
+  // console.log(cityInput.value);
+  searchAndDraw(cityInput.value);
 });
 
 /**
@@ -37,8 +38,8 @@ async function getCurrentWeather(city) {
     .then(status)
     .then(json)
     .catch((error) => {
-      console.log("Error", error);
-      return null;
+      // console.log("error here");
+      return "";
     });
 
   return response;
@@ -50,8 +51,6 @@ async function getCurrentWeather(city) {
  * @param {*} city
  */
 async function getNextFiveDaysForecast(city = "") {
-  const weatherList = [];
-
   const requestUrl = makeQueryURLWithKey(dailyWeatherApiURL, {
     q: `${city}`,
     units: "imperial",
@@ -85,8 +84,9 @@ async function getNextFiveDaysForecast(city = "") {
       return weathers;
     })
     .catch((error) => {
-      console.log("Error", error);
-      return null;
+      // console.log("Error", error);
+      // console.log("hi");
+      return "";
     });
 
   return response;
@@ -118,27 +118,31 @@ function makeQueryURLWithKey(baseURL, queryObject, apiKey = APIKEY) {
 async function searchAndDraw(city = "") {
   function drawCurrentWeather(todayWeather) {
     resultCity.textContent = city;
-    resultDetail.innerHTML = `
+    console.log(`city: ${city}`);
+    if (todayWeather === "") resultDetail.innerHTML = "Not Found";
+    else {
+      resultDetail.innerHTML = `
       <h4>temperature: ${todayWeather.temperature} F</h4>
       <h4>humidity: ${todayWeather.humidity} % </h4>
       <h4>wind speed: ${todayWeather.wind} MPH </h4>
       <h4>UV Index: ${todayWeather.uvIndex}  </h4>
     `;
+    }
   }
   function drawNextFiveWeather(weatherList) {
     cardGroup.innerHTML = "";
-    weatherList.forEach((weather) => {
-      const weatherCard = makeDailyWeatherCard(weather);
-      cardGroup.appendChild(weatherCard);
-    });
+    if (weatherList !== "") {
+      weatherList.forEach((weather) => {
+        const weatherCard = makeDailyWeatherCard(weather);
+        cardGroup.appendChild(weatherCard);
+      });
+    }
   }
   const todayWeather = await getTodaysWeather(city);
   const nextFiveDaysWeather = await getNextFiveDaysForecast(city);
 
   drawCurrentWeather(todayWeather);
   drawNextFiveWeather(nextFiveDaysWeather);
-
-  console.log(nextFiveDaysWeather);
 }
 
 async function getTodaysWeather(city = "") {
@@ -152,12 +156,16 @@ async function getTodaysWeather(city = "") {
       .then(json)
       .then((data) => data.value)
       .catch((error) => {
-        console.log(error, "uv_index not known");
+        // console.log(error, "uv_index not known");
         return "";
       });
     return data;
   }
   const todayWeather = await getCurrentWeather(city);
+
+  // If today's weather is not returned
+  if (todayWeather === "") return "";
+
   const latitude = todayWeather.coord.lat;
   const longitude = todayWeather.coord.lon;
   const uvIndex = await getUVIndex(latitude, longitude);
@@ -213,11 +221,3 @@ function status(response) {
 function json(response) {
   return response.json();
 }
-
-searchAndDraw("seattle");
-// cardGroup.innerHTML = makeDailyWeatherCard(12, 32, 32, 23);
-// const test = makeDailyWeatherCard(12, 32, 32, 23);
-// const test1 = makeDailyWeatherCard(12, 32, 32, 23);
-// console.log(test);
-// cardGroup.appendChild(test);
-// cardGroup.appendChild(test1);
